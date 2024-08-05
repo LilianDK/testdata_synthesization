@@ -1,11 +1,8 @@
 import pandas as pd
 from jinja2 import Template
 from synthesizer.config import co
+from loguru import logger
 
-co = co
-# from llm_preprocessing import k
-
-co = co
 # Hier eine andere Lösung finden statt aus dem zuvor produzierten Excel wieder laden
 contexts = pd.ExcelFile(r"results/first_stage_results.xlsx")
 contexts = contexts.parse(0)
@@ -28,7 +25,7 @@ for i, row in contexts.iterrows():
         k=0,
         p=0,
     )
-    print(response.text)
+    logger.info(response.text)
     original_input.append(response.text)
 
 df_2 = pd.concat([contexts, pd.DataFrame(original_input)], ignore_index=False, axis=1)

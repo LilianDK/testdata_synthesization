@@ -2,8 +2,7 @@ import random
 import pandas as pd
 from jinja2 import Template
 from synthesizer.config import co
-
-co = co
+from loguru import logger
 
 with open("prompt/query_evolution_multi_step_reasoning.j2", "r") as file:
     template_str = file.read()
@@ -37,7 +36,7 @@ evolved_query = []
 for j, row in contexts.iterrows():
     original_input = {"original_input": context.iloc[j, 6]}
     prompt = original_input
-    print(prompt)
+    logger.info(prompt)
     text = {"context": context.iloc[j, 4]}
 
     # Function to perform random evolution steps
@@ -46,7 +45,7 @@ for j, row in contexts.iterrows():
             # Choose a random (or using custom logic) template from the list
             chosen_template = random.choice(evolution_templates)
             # template = Template(chosen_template)
-            print(f"ORIGINAL INPUT: {original_input}")
+            logger.info(f"ORIGINAL INPUT: {original_input}")
             prompt = chosen_template.render(text=text, original_input=original_input)
             # Update the current input with the "Rewritten Input" section
             response = co.chat(
@@ -57,13 +56,13 @@ for j, row in contexts.iterrows():
                 k=0,
                 p=0,
             )
-            print(f"NEW INPUT: {response.text}")
+            logger.info(f"NEW INPUT: {response.text}")
             original_input = {"original_input": response.text}
         return original_input
 
     # Evolve the input by randomly selecting the evolution type
     temp = evolve_query(original_input, text, num_evolution_steps)
-    print(temp)
+    logger.info(temp)
     evolved_query.append(temp)
 
 df_3 = pd.concat([contexts, pd.DataFrame(evolved_query)], ignore_index=False, axis=1)
@@ -77,7 +76,7 @@ contexts = contexts.parse(0)
 for j, row in contexts.iterrows():
     evolved_query = {"original_input": contexts.iloc[j, 7]}
     text = {"context": contexts.iloc[j, 5]}
-    print(f"EVOLVED QUERY: {evolved_query}")
+    logger.info(f"EVOLVED QUERY: {evolved_query}")
     prompt = expectation_output.render(text=text, evolved_query=evolved_query)
     response = co.chat(
         model="command-r-plus",
@@ -87,7 +86,7 @@ for j, row in contexts.iterrows():
         k=0,
         p=0,
     )
-    print(f"EXPECTED QUERY: {response.text}")
+    logger.info(f"EXPECTED QUERY: {response.text}")
     expected_query.append(response.text)
 
 df_4 = pd.concat([contexts, pd.DataFrame(expected_query)], ignore_index=False, axis=1)
