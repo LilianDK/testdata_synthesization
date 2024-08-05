@@ -1,22 +1,24 @@
 import random
+
 import pandas as pd
 from jinja2 import Template
-from synthesizer.config import co
 from loguru import logger
 
-with open("prompt/query_evolution_multi_step_reasoning.j2", "r") as file:
+from synthesizer.config import co
+
+with open("prompt/query_evolution_multi_step_reasoning.j2") as file:
     template_str = file.read()
 evolution_template_1 = Template(template_str)
 
-with open("prompt/query_evolution_multi_context_template.j2", "r") as file:
+with open("prompt/query_evolution_multi_context_template.j2") as file:
     template_str = file.read()
 evolution_template_2 = Template(template_str)
 
-with open("prompt/query_evolution_hypothetical_scenario.j2", "r") as file:
+with open("prompt/query_evolution_hypothetical_scenario.j2") as file:
     template_str = file.read()
 evolution_template_3 = Template(template_str)
 
-with open("prompt/expected_output_generation.j2", "r") as file:
+with open("prompt/expected_output_generation.j2") as file:
     template_str = file.read()
 expectation_output = Template(template_str)
 
@@ -33,14 +35,14 @@ context = processing_context
 
 evolved_query = []
 
-for j, row in contexts.iterrows():
+for j, _row in contexts.iterrows():
     original_input = {"original_input": context.iloc[j, 6]}
     prompt = original_input
     logger.info(prompt)
     text = {"context": context.iloc[j, 4]}
 
     # Function to perform random evolution steps
-    def evolve_query(original_input: str, text: str, num_evolution_steps: int):
+    def evolve_query(original_input: str, text: str, num_evolution_steps: int) -> dict:
         for _ in range(num_evolution_steps):
             # Choose a random (or using custom logic) template from the list
             chosen_template = random.choice(evolution_templates)
@@ -66,14 +68,14 @@ for j, row in contexts.iterrows():
     evolved_query.append(temp)
 
 df_3 = pd.concat([contexts, pd.DataFrame(evolved_query)], ignore_index=False, axis=1)
-df_3.to_excel(f"results/third_stage_results.xlsx")
+df_3.to_excel("results/third_stage_results.xlsx")
 
 expected_query = []
 j = 0
 contexts = pd.ExcelFile(r"results/third_stage_results.xlsx")
 contexts = contexts.parse(0)
 
-for j, row in contexts.iterrows():
+for j, _row in contexts.iterrows():
     evolved_query = {"original_input": contexts.iloc[j, 7]}
     text = {"context": contexts.iloc[j, 5]}
     logger.info(f"EVOLVED QUERY: {evolved_query}")
@@ -90,4 +92,4 @@ for j, row in contexts.iterrows():
     expected_query.append(response.text)
 
 df_4 = pd.concat([contexts, pd.DataFrame(expected_query)], ignore_index=False, axis=1)
-df_4.to_excel(f"results/fourth_stage_results.xlsx")
+df_4.to_excel("results/fourth_stage_results.xlsx")

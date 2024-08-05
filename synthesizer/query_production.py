@@ -1,7 +1,8 @@
 import pandas as pd
 from jinja2 import Template
-from synthesizer.config import co
 from loguru import logger
+
+from synthesizer.config import co
 
 # Hier eine andere Lösung finden statt aus dem zuvor produzierten Excel wieder laden
 contexts = pd.ExcelFile(r"results/first_stage_results.xlsx")
@@ -9,8 +10,8 @@ contexts = contexts.parse(0)
 nrow = len(contexts)
 
 original_input = []
-for i, row in contexts.iterrows():
-    with open("prompt/query_generation.j2", "r") as file:
+for i, _row in contexts.iterrows():
+    with open("prompt/query_generation.j2") as file:
         template_str = file.read()
 
     template = Template(template_str)
@@ -29,4 +30,4 @@ for i, row in contexts.iterrows():
     original_input.append(response.text)
 
 df_2 = pd.concat([contexts, pd.DataFrame(original_input)], ignore_index=False, axis=1)
-df_2.to_excel(f"results/second_stage_results.xlsx")
+df_2.to_excel("results/second_stage_results.xlsx")
