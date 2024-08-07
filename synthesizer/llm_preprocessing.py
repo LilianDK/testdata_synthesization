@@ -6,26 +6,70 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import TokenTextSplitter
 from loguru import logger
 from sklearn.cluster import KMeans
+import json
 
 from synthesizer.config import co
 
 load_dotenv(override=True)
 
+input_type = "JSON"
+
 logger.info("START TEXT SPLITTING")
-text_splitter = TokenTextSplitter(chunk_size=1024, chunk_overlap=0)
-loader = PyPDFLoader("./data/FuerArbeitSonstiges_Abdul et al_2018_Trends and trajectories for explainable.pdf")
-raw_chunks = loader.load_and_split(text_splitter)
-logger.info(raw_chunks[1])
-content = [rc.page_content for rc in raw_chunks]
-logger.info(f"END TEXT SPLITTING n = {len(content)}")
+text_splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=0)
 
-source = [rc.metadata["source"] for rc in raw_chunks]
-page = [rc.metadata["page"] for rc in raw_chunks]
-content = [rc.page_content for rc in raw_chunks]
+if input_type == "JSON":
+# --------------- JSON
+    document_id = []
+    source_url = []
+    text = []
+    # Open and read the JSON file with the correct encoding
+    with open("./data/dump_html.json", "r", encoding="utf-8") as file:
+        file_content = file.read()
 
-df = pd.DataFrame({"name": source, "page": page, "text_chunks": content})
-# df.to_excel("results.xlsx")
+        # Parse the JSON content
+        data_dict = json.loads(file_content)
 
+        # Iterating over a dictionary
+        for item in data_dict["results"]:
+            doc_id = item["document_id"]
+            source = item["metadata"]["source"]["url"]
+            t = item["text"]
+            document_id.append(doc_id)
+            source_url.append(source)
+            text.append(t)
+            print(document_id)
+            print(source_url)
+            print(text)
+
+    text_splits = []
+    document_idlist = []
+    source_urllist = []
+    for idx, t in enumerate(text):
+        splits = text_splitter.split_text(t)
+        for s in splits:
+            text_splits.append(s)
+            document_idlist.append(document_id[idx])
+            source_urllist.append(source_url[idx])
+
+    df = pd.DataFrame({"document_id": document_idlist, "source_url": source_urllist, "text_chunks": text_splits})
+# --------------- JSON
+
+# --------------- PDF
+if input_type == "PDF":
+    loader = PyPDFLoader("./data/FuerArbeitSonstiges_Abdul et al_2018_Trends and trajectories for explainable.pdf")
+    raw_chunks = loader.load_and_split(text_splitter)
+
+    logger.info(raw_chunks[1])
+    content = [rc.page_content for rc in raw_chunks]
+    logger.info(f"END TEXT SPLITTING n = {len(content)}")
+
+    source = [rc.metadata["source"] for rc in raw_chunks]
+    page = [rc.metadata["page"] for rc in raw_chunks]
+    content = [rc.page_content for rc in raw_chunks]
+
+    df = pd.DataFrame({"name": source, "page": page, "text_chunks": content})
+    # df.to_excel("results_json.xlsx")
+# --------------- PDF
 
 def cluster_embeddings(embeddings: list[float], num_clusters: int) -> list:
     """Clustering with vector embeddings.
