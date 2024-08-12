@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
@@ -12,7 +13,7 @@ from synthesizer.config import co
 
 load_dotenv(override=True)
 
-input_type = "JSON"
+input_type = "PDF"
 
 logger.info("START TEXT SPLITTING")
 text_splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=0)
@@ -56,16 +57,27 @@ if input_type == "JSON":
 
 # --------------- PDF
 if input_type == "PDF":
-    loader = PyPDFLoader("./data/FuerArbeitSonstiges_Abdul et al_2018_Trends and trajectories for explainable.pdf")
-    raw_chunks = loader.load_and_split(text_splitter)
+    raw_chunks = []
+    directory = "./data/"
+
+    for name in os.listdir(directory):
+        # Open file
+        with open(os.path.join(directory, name)) as f:
+            loader = PyPDFLoader(f"{directory}{name}")
+            extraction = loader.load_and_split(text_splitter)
+            raw_chunks.append(extraction)
 
     logger.info(raw_chunks[1])
-    content = [rc.page_content for rc in raw_chunks]
-    logger.info(f"END TEXT SPLITTING n = {len(content)}")
-
-    source = [rc.metadata["source"] for rc in raw_chunks]
-    page = [rc.metadata["page"] for rc in raw_chunks]
-    content = [rc.page_content for rc in raw_chunks]
+    #content = [rc.page_content for rc in raw_chunks]
+    #logger.info(f"END TEXT SPLITTING n = {len(content)}")
+    source =[]
+    page = []
+    content = []
+    for r in raw_chunks:
+        for x in r:
+            source.append(x.metadata["source"])
+            page.append(x.metadata["page"])
+            content.append(x.page_content)
 
     df = pd.DataFrame({"name": source, "page": page, "text_chunks": content})
     # df.to_excel("results_json.xlsx")
