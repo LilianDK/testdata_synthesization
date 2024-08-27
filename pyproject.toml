@@ -13,7 +13,7 @@ dependencies=[
     "random11==0.0.1",
     "loguru==0.7.2",
     "scikit-learn==1.5.1",
-    "tiktoken", "pypdf", "kneed[plot]", "openpyxl"
+    "tiktoken", "pypdf", "kneed[plot]", "openpyxl",  "arize-phoenix", 'langchain_cohere', "opentelemetry-sdk", "opentelemetry-exporter-otlp"
 ]
 [tool.setuptools]
 packages=["synthesizer"]
