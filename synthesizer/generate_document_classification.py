@@ -6,6 +6,7 @@ from loguru import logger
 
 from synthesizer.config import co
 
+
 def generate_doc_classification():
     n = 100
     text = []

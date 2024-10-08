@@ -1,12 +1,12 @@
-from synthesizer.llm_preprocessing import preprocessing
-from synthesizer.query_production import query_production
-from synthesizer.query_evolution import query_evolution
 from openinference.instrumentation.langchain import LangChainInstrumentor
-
 from opentelemetry import trace as trace_api
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk import trace as trace_sdk
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+
+from synthesizer.llm_preprocessing import preprocessing
+from synthesizer.query_evolution import query_evolution
+from synthesizer.query_production import query_production
 
 tracer_provider = trace_sdk.TracerProvider()
 span_exporter = OTLPSpanExporter("http://localhost:6006/v1/traces")
@@ -16,9 +16,12 @@ trace_api.set_tracer_provider(tracer_provider)
 
 LangChainInstrumentor().instrument()
 
+# ollama.pull("snowflake-arctic-embed")
+# ollama.pull("llama3.1:latest")
 
-def main():
+def main() -> None:
     preprocessing()
+
     query_production()
     query_evolution()
 

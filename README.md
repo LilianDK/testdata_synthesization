@@ -6,8 +6,11 @@
   - [Starting the tracing server](#starting-the-tracing-server)
 
 
-## Installation
+## Preconditions
+https://visualstudio.microsoft.com/visual-cpp-build-tools/
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
 
+## Installation
 First create a virtual env.
 
 ```bash
@@ -20,15 +23,15 @@ Then activate the Venv (different on different OS), but windows
 .\.venv\Scripts\activate
 ```
 
-Then install the python dependencies.
+Then install the python dependencies (don't forget -> need internet!).
 ```bash
-pip install .
+pip install -e .
 ```
 
 ## Starting the tracing server
 
 ```bash
-python3 -m phoenix.server.main serve
+python -m phoenix.server.main serve
 ```
 
 Find the traces on http://localhost:6006
